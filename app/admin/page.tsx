@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { decrypt } from "@/lib/session";
+import {
+  decrypt,
+  SESSION_COOKIE_NAME,
+} from "@/lib/session";
 import LogoutButton from "./logout-button";
 
 const activity = [
@@ -30,7 +33,7 @@ export default async function AdminPage() {
   const cookieStore = await cookies();
 
   const sessionCookie =
-    cookieStore.get("securefactory_session");
+    cookieStore.get(SESSION_COOKIE_NAME);
 
   if (!sessionCookie) {
     redirect("/login");

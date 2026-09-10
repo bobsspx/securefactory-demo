@@ -11,9 +11,15 @@ export async function verifyCredentials(
     return false;
   }
 
-  if (email.toLowerCase() !== adminEmail.toLowerCase()) {
-    return false;
-  }
+  const emailMatches =
+    email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
 
-  return bcrypt.compare(password, adminPasswordHash);
+  // Always perform the bcrypt comparison when auth is configured.
+  // This avoids an obvious fast-fail path for an incorrect email.
+  const passwordMatches = await bcrypt.compare(
+    password,
+    adminPasswordHash
+  );
+
+  return emailMatches && passwordMatches;
 }
