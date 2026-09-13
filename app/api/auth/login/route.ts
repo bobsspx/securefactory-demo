@@ -24,7 +24,7 @@ function getClientIp(request: Request) {
 
   return (
     request.headers.get("x-real-ip") ??
-    "local"
+    "127.0.0.1"
   );
 }
 
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       checkLoginRateLimit(rateLimitKey);
 
     if (!limit.allowed) {
-      securityLog({
+      await securityLog({
         event: "LOGIN_RATE_LIMITED",
         ip,
         email,
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     if (!valid) {
       recordFailedLogin(rateLimitKey);
 
-      securityLog({
+      await securityLog({
         event: "LOGIN_FAILURE",
         ip,
         email,
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 2,
     });
 
-    securityLog({
+    await securityLog({
       event: "LOGIN_SUCCESS",
       ip,
       email,
