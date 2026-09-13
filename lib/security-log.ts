@@ -1,3 +1,5 @@
+import { sql } from "./db";
+
 export type SecurityEvent =
   | "LOGIN_SUCCESS"
   | "LOGIN_FAILURE"
@@ -11,6 +13,8 @@ type SecurityLogData = {
   email?: string;
   details?: string;
 };
+
+type Severity = "low" | "medium" | "high";
 
 function maskEmail(email?: string) {
   if (!email) {
@@ -51,7 +55,23 @@ function maskIp(ip?: string) {
   return "unknown";
 }
 
-export function securityLog(data: SecurityLogData) {
+function getSeverity(event: SecurityEvent): Severity {
+  switch (event) {
+    case "LOGIN_FAILURE":
+      return "medium";
+
+    case "LOGIN_RATE_LIMITED":
+    case "INVALID_SESSION":
+      return "high";
+
+    case "LOGIN_SUCCESS":
+    case "LOGOUT":
+    default:
+      return "low";
+  }
+}
+
+export async function securityLog(data: SecurityLogData) {
   const entry = {
     timestamp: new Date().toISOString(),
     type: "SECURITY_EVENT",
@@ -59,7 +79,32 @@ export function securityLog(data: SecurityLogData) {
     ip: maskIp(data.ip),
     email: maskEmail(data.email),
     details: data.details ?? "",
+    severity: getSeverity(data.event),
   };
 
   console.log(JSON.stringify(entry));
+
+  try {
+    await sql`
+      INSERT INTO public.security_events (
+        event_type,
+        email,
+        ip_address,
+        details,
+        severity
+      )
+      VALUES (
+        ${entry.event},
+        ${entry.email},
+        ${entry.ip},
+        ${entry.details},
+        ${entry.severity}
+      )
+    `;
+  } catch (error) {
+    console.error(
+      "Failed to persist security event:",
+      error
+    );
+  }
 }

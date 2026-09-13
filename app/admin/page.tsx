@@ -1,33 +1,14 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   decrypt,
   SESSION_COOKIE_NAME,
 } from "@/lib/session";
 import LogoutButton from "./logout-button";
-
-const activity = [
-  {
-    event: "Production report generated",
-    user: "System",
-    time: "10:42",
-  },
-  {
-    event: "Quality inspection completed",
-    user: "QC Team",
-    time: "09:15",
-  },
-  {
-    event: "Security configuration checked",
-    user: "Admin",
-    time: "08:32",
-  },
-  {
-    event: "Production Line 08 online",
-    user: "System",
-    time: "07:58",
-  },
-];
+import {
+  getRecentSecurityEvents,
+} from "@/lib/security-events";
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
@@ -45,13 +26,18 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
+  const activity =
+  await getRecentSecurityEvents(20).catch(
+    () => []
+  );
+
   return (
     <main className="adminLayout">
       <aside className="adminSidebar">
         <div>
-          <a href="/" className="adminLogo">
+          <Link href="/" className="adminLogo">
             SECURE<span>FACTORY</span>
-          </a>
+          </Link>
 
           <p>ADMIN CONSOLE</p>
         </div>
@@ -170,21 +156,50 @@ export default async function AdminPage() {
 
           <div className="activityTable">
             <div className="activityRow activityHead">
-              <span>EVENT</span>
-              <span>USER / SOURCE</span>
-              <span>TIME</span>
-            </div>
+            <span>EVENT</span>
+            <span>SOURCE</span>
+            <span>TIME (UTC)</span>
+          </div>
 
-            {activity.map((item) => (
-              <div
-                className="activityRow"
-                key={`${item.event}-${item.time}`}
-              >
-                <strong>{item.event}</strong>
-                <span>{item.user}</span>
-                <span>{item.time}</span>
+            {activity.length === 0 ? (
+              <div className="activityEmpty">
+                No security events recorded yet.
               </div>
-            ))}
+            ) : (
+              activity.map((item) => (
+                <div
+                  className="activityRow"
+                  key={item.id}
+                >
+                  <div className="activityEvent">
+                    <strong>{item.event_type}</strong>
+
+                    <small>
+                      {item.details || "Security event"}
+                    </small>
+                  </div>
+
+                  <span>
+                    {item.email || "unknown"}
+                    <br />
+                    {item.ip_address || "unknown"}
+                  </span>
+
+                  <span>
+                    {new Intl.DateTimeFormat(
+                      "en-GB",
+                      {
+                        dateStyle: "medium",
+                        timeStyle: "medium",
+                        timeZone: "UTC",
+                      }
+                    ).format(
+                      new Date(item.created_at)
+                    )}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </section>
       </section>

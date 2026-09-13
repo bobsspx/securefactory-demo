@@ -34,7 +34,7 @@ export async function POST() {
     expires: new Date(0),
   });
 
-  securityLog({
+  await securityLog({
     event: "LOGOUT",
     details: "Admin session terminated",
   });

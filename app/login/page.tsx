@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,9 +49,9 @@ export default function LoginPage() {
   return (
     <main className="loginPage">
       <section className="loginPanel">
-        <a href="/" className="loginLogo">
+        <Link href="/" className="loginLogo">
           SECURE<span>FACTORY</span>
-        </a>
+        </Link>
 
         <div className="loginHeading">
           <p>SECURE ADMIN ACCESS</p>
@@ -97,9 +98,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <a href="/" className="backHome">
+        <Link href="/" className="backHome">
           ← Return to website
-        </a>
+        </Link>
       </section>
 
       <section className="loginVisual">

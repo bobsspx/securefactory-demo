@@ -1085,3 +1085,20 @@ footer p {
     gap: 7px;
   }
 }
+
+.activityEvent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.activityEvent small {
+  color: #667075;
+  font-size: 10px;
+}
+
+.activityEmpty {
+  padding: 30px 20px;
+  color: #667075;
+  font-size: 13px;
+}

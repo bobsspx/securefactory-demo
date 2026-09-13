@@ -292,7 +292,7 @@ export default function Home() {
         <p className="sectionLabel">05 / CONTACT</p>
 
         <h2>
-          Let's build something
+          Let’s build something
           <br />
           reliable.
         </h2>
