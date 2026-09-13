@@ -1,87 +1,192 @@
-type AttemptRecord = {
-  attempts: number;
-  resetAt: number;
-};
+import { createHmac } from "crypto";
 
-const WINDOW_MS = 10 * 60 * 1000;
+import { sql } from "./db";
+
+const WINDOW_MS =
+  10 * 60 * 1000;
+
 const MAX_ATTEMPTS = 5;
 
-const globalForRateLimit = globalThis as typeof globalThis & {
-  secureFactoryLoginAttempts?: Map<string, AttemptRecord>;
+type RateLimitState = {
+  attempts: number;
+  windowStartedAt: Date;
 };
 
-const attempts =
-  globalForRateLimit.secureFactoryLoginAttempts ??
-  new Map<string, AttemptRecord>();
+export type RateLimitStore = {
+  consumeAttempt:
+    (
+      key: string
+    ) => Promise<RateLimitState>;
 
-globalForRateLimit.secureFactoryLoginAttempts = attempts;
+  reset:
+    (
+      key: string
+    ) => Promise<void>;
+};
 
-function cleanupExpired() {
-  const now = Date.now();
-
-  for (const [key, value] of attempts.entries()) {
-    if (value.resetAt <= now) {
-      attempts.delete(key);
-    }
+export function createRateLimitKey(
+  ip: string,
+  email: string,
+  secret =
+    process.env.RATE_LIMIT_SECRET
+) {
+  if (!secret) {
+    throw new Error(
+      "RATE_LIMIT_SECRET is not configured"
+    );
   }
+
+  const normalizedIp =
+    ip.trim();
+
+  const normalizedEmail =
+    email
+      .trim()
+      .toLowerCase();
+
+  return createHmac(
+    "sha256",
+    secret
+  )
+    .update(
+      `${normalizedIp}\0${normalizedEmail}`
+    )
+    .digest("hex");
 }
 
-export function checkLoginRateLimit(key: string) {
-  cleanupExpired();
+const postgresRateLimitStore:
+  RateLimitStore = {
 
-  const now = Date.now();
-  const record = attempts.get(key);
+  async consumeAttempt(key) {
+    const rows = await sql`
+      INSERT INTO login_rate_limits (
+        rate_limit_key,
+        attempts,
+        window_started_at,
+        updated_at
+      )
+      VALUES (
+        ${key},
+        1,
+        NOW(),
+        NOW()
+      )
 
-  if (!record) {
+      ON CONFLICT (rate_limit_key)
+
+      DO UPDATE SET
+
+        attempts =
+          CASE
+            WHEN
+              login_rate_limits.window_started_at
+              <= NOW() - INTERVAL '10 minutes'
+            THEN 1
+            ELSE
+              login_rate_limits.attempts + 1
+          END,
+
+        window_started_at =
+          CASE
+            WHEN
+              login_rate_limits.window_started_at
+              <= NOW() - INTERVAL '10 minutes'
+            THEN NOW()
+            ELSE
+              login_rate_limits.window_started_at
+          END,
+
+        updated_at = NOW()
+
+      RETURNING
+        attempts,
+        window_started_at;
+    `;
+
     return {
-      allowed: true,
-      remaining: MAX_ATTEMPTS,
-      retryAfterSeconds: 0,
+      attempts:
+        Number(
+          rows[0].attempts
+        ),
+
+      windowStartedAt:
+        new Date(
+          rows[0]
+            .window_started_at as
+            string | Date
+        ),
     };
-  }
+  },
 
-  if (record.resetAt <= now) {
-    attempts.delete(key);
+  async reset(key) {
+    await sql`
+      DELETE FROM login_rate_limits
+      WHERE rate_limit_key = ${key}
+    `;
+  },
+};
 
-    return {
-      allowed: true,
-      remaining: MAX_ATTEMPTS,
-      retryAfterSeconds: 0,
-    };
-  }
+export async function checkLoginRateLimit(
+  key: string,
+  store:
+    RateLimitStore =
+      postgresRateLimitStore,
+  now = new Date()
+) {
+  const state =
+    await store.consumeAttempt(
+      key
+    );
 
-  const allowed = record.attempts < MAX_ATTEMPTS;
+  /*
+   * Existing policy:
+   *
+   * Attempts 1-5 = allowed.
+   * Attempt 6+ = blocked.
+   */
+  const allowed =
+    state.attempts <=
+    MAX_ATTEMPTS;
+
+  const remaining =
+    Math.max(
+      MAX_ATTEMPTS -
+        state.attempts,
+      0
+    );
+
+  const resetAt =
+    state
+      .windowStartedAt
+      .getTime() +
+    WINDOW_MS;
+
+  const retryAfterSeconds =
+    allowed
+      ? 0
+      : Math.max(
+          Math.ceil(
+            (
+              resetAt -
+              now.getTime()
+            ) /
+              1000
+          ),
+          1
+        );
 
   return {
     allowed,
-    remaining: Math.max(
-      MAX_ATTEMPTS - record.attempts,
-      0
-    ),
-    retryAfterSeconds: allowed
-      ? 0
-      : Math.ceil((record.resetAt - now) / 1000),
+    remaining,
+    retryAfterSeconds,
   };
 }
 
-export function recordFailedLogin(key: string) {
-  const now = Date.now();
-  const existing = attempts.get(key);
-
-  if (!existing || existing.resetAt <= now) {
-    attempts.set(key, {
-      attempts: 1,
-      resetAt: now + WINDOW_MS,
-    });
-
-    return;
-  }
-
-  existing.attempts += 1;
-
-  attempts.set(key, existing);
-}
-
-export function resetLoginRateLimit(key: string) {
-  attempts.delete(key);
+export async function resetLoginRateLimit(
+  key: string,
+  store:
+    RateLimitStore =
+      postgresRateLimitStore
+) {
+  await store.reset(key);
 }

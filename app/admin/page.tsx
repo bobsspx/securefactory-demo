@@ -26,10 +26,7 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  const activity =
-  await getRecentSecurityEvents(20).catch(
-    () => []
-  );
+  const activity = await getRecentSecurityEvents(20);
 
   return (
     <main className="adminLayout">

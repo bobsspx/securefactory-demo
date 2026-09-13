@@ -27,7 +27,7 @@ export async function getRecentSecurityEvents(
       details,
       severity,
       created_at
-    FROM security_events
+    FROM public.security_events
     ORDER BY created_at DESC
     LIMIT ${safeLimit}
   `;

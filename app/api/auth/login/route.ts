@@ -8,7 +8,7 @@ import {
 
 import {
   checkLoginRateLimit,
-  recordFailedLogin,
+  createRateLimitKey,
   resetLoginRateLimit,
 } from "@/lib/login-rate-limit";
 
@@ -59,10 +59,16 @@ export async function POST(request: Request) {
 
     const ip = getClientIp(request);
 
-    const rateLimitKey = `${ip}:${email}`;
+   const rateLimitKey =
+    createRateLimitKey(
+      ip,
+      email
+    );
 
     const limit =
-      checkLoginRateLimit(rateLimitKey);
+      await checkLoginRateLimit(
+      rateLimitKey
+    );
 
     if (!limit.allowed) {
       await securityLog({
@@ -93,7 +99,6 @@ export async function POST(request: Request) {
       await verifyCredentials(email, password);
 
     if (!valid) {
-      recordFailedLogin(rateLimitKey);
 
       await securityLog({
         event: "LOGIN_FAILURE",
@@ -116,7 +121,7 @@ export async function POST(request: Request) {
       );
     }
 
-    resetLoginRateLimit(rateLimitKey);
+    await resetLoginRateLimit(rateLimitKey);
 
     const session = await encrypt({
       userId: "securefactory-admin",
