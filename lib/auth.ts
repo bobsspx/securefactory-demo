@@ -1,25 +1,82 @@
 import bcrypt from "bcryptjs";
 
-export async function verifyCredentials(
-  email: string,
-  password: string
-) {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+import {
+  findActiveUserByEmail,
+  type AuthUserRecord,
+} from "./users";
 
-  if (!adminEmail || !adminPasswordHash) {
-    return false;
-  }
+import type {
+  UserRole,
+} from "./rbac";
 
-  const emailMatches =
-    email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
+export type AuthenticatedUser = {
+  id: string;
+  email: string;
+  role: UserRole;
+};
 
-  // Always perform the bcrypt comparison when auth is configured.
-  // This avoids an obvious fast-fail path for an incorrect email.
-  const passwordMatches = await bcrypt.compare(
-    password,
-    adminPasswordHash
+type UserLookup =
+  (
+    email: string
+  ) =>
+    Promise<
+      AuthUserRecord | null
+    >;
+
+/*
+ * Used only for timing-safe comparison
+ * when an account does not exist.
+ *
+ * It is not associated with
+ * any real SecureFactory user.
+ */
+const DUMMY_PASSWORD_HASH =
+  bcrypt.hashSync(
+    "securefactory-invalid-user",
+    12
   );
 
-  return emailMatches && passwordMatches;
+export async function
+verifyCredentials(
+  email: string,
+  password: string,
+  lookup:
+    UserLookup =
+      findActiveUserByEmail
+): Promise<
+  AuthenticatedUser | null
+> {
+
+  const normalizedEmail =
+    email
+      .trim()
+      .toLowerCase();
+
+  const user =
+    await lookup(
+      normalizedEmail
+    );
+
+  const hash =
+    user?.passwordHash ??
+    DUMMY_PASSWORD_HASH;
+
+  const passwordMatches =
+    await bcrypt.compare(
+      password,
+      hash
+    );
+
+  if (
+    !user ||
+    !passwordMatches
+  ) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  };
 }

@@ -9,6 +9,9 @@ import LogoutButton from "./logout-button";
 import {
   getRecentSecurityEvents,
 } from "@/lib/security-events";
+import {
+  hasPermission,
+} from "@/lib/rbac";
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
@@ -22,11 +25,25 @@ export default async function AdminPage() {
 
   const session = await decrypt(sessionCookie.value);
 
-  if (!session || session.role !== "admin") {
+  if (!session) {
     redirect("/login");
   }
 
-  const activity = await getRecentSecurityEvents(20);
+  const canViewSecurity =
+  hasPermission(
+    session.role,
+    "security.read"
+  );
+
+  const canViewAudit =
+  hasPermission(
+    session.role,
+    "audit.read"
+  );
+
+  const activity =
+  canViewAudit
+    ? await getRecentSecurityEvents(20): [];
 
   return (
     <main className="adminLayout">
@@ -48,13 +65,18 @@ export default async function AdminPage() {
             Production
           </a>
 
-          <a href="#security">
-            Security
-          </a>
+        
+          {canViewSecurity && (
+            <a href="#security">
+              Security
+            </a>
+          )}
 
-          <a href="#activity">
-            Activity Logs
-          </a>
+          {canViewAudit && (
+            <a href="#activity">
+              Activity Logs
+            </a>
+          )}
         </nav>
 
         <LogoutButton />
@@ -68,7 +90,7 @@ export default async function AdminPage() {
           </div>
 
           <div className="adminUser">
-            <span>ADMIN</span>
+            <span>{session.role.toUpperCase()}</span>
             <strong>{session.email}</strong>
           </div>
         </header>
@@ -102,10 +124,15 @@ export default async function AdminPage() {
           </article>
         </section>
 
+      {canViewSecurity && (
         <section
           id="security"
           className="adminSection"
-        >
+        > 
+          {/* Security posture
+            content เดิม */}
+          </section>
+      )}
           <div className="adminSectionHeader">
             <div>
               <p>SECURITY</p>
@@ -140,10 +167,28 @@ export default async function AdminPage() {
           </div>
         </section>
 
-        <section
-          id="activity"
-          className="adminSection"
-        >
+        {canViewSecurity && (
+          <section
+            id="security"
+            className="adminSection"
+          >
+
+            {/* Security posture
+                content เดิม */}
+
+          </section>
+        )}
+        {canViewAudit && (
+          <section
+            id="activity"
+            className="adminSection"
+          >
+
+            {/* Recent activity
+                content เดิม */}
+
+          </section>
+        )}
           <div className="adminSectionHeader">
             <div>
               <p>MONITORING</p>
@@ -198,8 +243,6 @@ export default async function AdminPage() {
               ))
             )}
           </div>
-        </section>
-      </section>
     </main>
   );
 }

@@ -112,7 +112,7 @@ export default function LoginPage() {
         <div className="securityIndicators">
           <p>Encrypted session</p>
           <p>HttpOnly cookie</p>
-          <p>Protected admin routes</p>
+          <p>Role-based access control</p>
           <p>Authentication logging</p>
         </div>
       </section>

@@ -95,10 +95,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const valid =
+    const user =
       await verifyCredentials(email, password);
 
-    if (!valid) {
+    if (!user) {
 
       await securityLog({
         event: "LOGIN_FAILURE",
@@ -123,11 +123,11 @@ export async function POST(request: Request) {
 
     await resetLoginRateLimit(rateLimitKey);
 
-    const session = await encrypt({
-      userId: "securefactory-admin",
-      email,
-      role: "admin",
-    });
+    const session =
+      await encrypt({
+        userId:user.id,
+        email:user.email,role:user.role,
+      });
 
     const response = NextResponse.json(
       {
@@ -157,10 +157,16 @@ export async function POST(request: Request) {
     });
 
     await securityLog({
-      event: "LOGIN_SUCCESS",
+      event:
+        "LOGIN_SUCCESS",
+
       ip,
-      email,
-      details: "Admin authenticated",
+
+      email:
+        user.email,
+
+      details:
+        `Authenticated role=${user.role}`,
     });
 
     return response;
