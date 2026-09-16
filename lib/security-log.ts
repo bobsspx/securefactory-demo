@@ -5,7 +5,8 @@ export type SecurityEvent =
   | "LOGIN_FAILURE"
   | "LOGIN_RATE_LIMITED"
   | "LOGOUT"
-  | "INVALID_SESSION";
+  | "INVALID_SESSION"
+  | "AUTHORIZATION_DENIED";
 
 type SecurityLogData = {
   event: SecurityEvent;
@@ -40,6 +41,10 @@ function maskIp(ip?: string) {
     return "unknown";
   }
 
+  if (ip === "::1") {
+    return "127.0.0.xxx";
+  } 
+
   if (ip.includes(".")) {
     const parts = ip.split(".");
 
@@ -58,10 +63,11 @@ function maskIp(ip?: string) {
 function getSeverity(event: SecurityEvent): Severity {
   switch (event) {
     case "LOGIN_FAILURE":
+    case "AUTHORIZATION_DENIED":
+    case "INVALID_SESSION":
       return "medium";
 
     case "LOGIN_RATE_LIMITED":
-    case "INVALID_SESSION":
       return "high";
 
     case "LOGIN_SUCCESS":

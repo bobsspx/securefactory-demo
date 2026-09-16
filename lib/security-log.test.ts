@@ -80,4 +80,38 @@ describe("securityLog", () => {
 
     expect(entry.severity).toBe("low");
   });
+
+  it(
+  "uses medium severity for authorization denial",
+  async () => {
+    const logSpy = vi
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
+
+    await securityLog({
+      event: "AUTHORIZATION_DENIED",
+      email: "viewer@securefactory.demo",
+      ip: "139.162.113.45",
+      details: "permission=security.read",
+    });
+
+    expect(logSpy).toHaveBeenCalledTimes(1);
+
+    const output =
+      logSpy.mock.calls[0][0] as string;
+
+    const entry = JSON.parse(output);
+
+    expect(entry).toMatchObject({
+      event: "AUTHORIZATION_DENIED",
+      email: "vi***@securefactory.demo",
+      ip: "139.162.113.xxx",
+      details: "permission=security.read",
+      severity: "medium",
+    });
+
+    expect(sqlMock).toHaveBeenCalledTimes(1);
+  }
+);
+
 });
