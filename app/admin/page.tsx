@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import {
-  decrypt,
   SESSION_COOKIE_NAME,
 } from "@/lib/session";
 
@@ -14,6 +13,10 @@ import {
 import {
   hasPermission,
 } from "@/lib/rbac";
+
+import {
+  resolveSessionUser,
+} from "@/lib/session-user";
 
 import LogoutButton from "./logout-button";
 
@@ -27,12 +30,20 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  const session =
-    await decrypt(sessionCookie.value);
+  const resolution =
+  await resolveSessionUser(
+    sessionCookie.value
+  );
 
-  if (!session) {
-    redirect("/login");
+  if (
+    resolution.status
+    !== "valid"
+  ) {
+  redirect("/login");
   }
+
+const session =
+  resolution.user;
 
   const canViewSecurity =
     hasPermission(

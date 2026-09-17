@@ -114,4 +114,55 @@ describe("securityLog", () => {
   }
 );
 
+it(
+  "uses medium severity for revoked sessions",
+  async () => {
+    const logSpy = vi
+      .spyOn(
+        console,
+        "log"
+      )
+      .mockImplementation(
+        () => {}
+      );
+
+    await securityLog({
+      event:
+        "SESSION_REVOKED",
+
+      email:
+        "operator@securefactory.demo",
+
+      ip:
+        "139.162.113.45",
+
+      details:
+        "reason=session_stale",
+    });
+
+    const output =
+      logSpy.mock
+        .calls[0][0] as string;
+
+    const entry =
+      JSON.parse(output);
+
+    expect(
+      entry
+    ).toMatchObject({
+      event:
+        "SESSION_REVOKED",
+
+      email:
+        "op***@securefactory.demo",
+
+      ip:
+        "139.162.113.xxx",
+
+      severity:
+        "medium",
+    });
+  }
+);
+
 });

@@ -13,6 +13,7 @@ export type AuthenticatedUser = {
   id: string;
   email: string;
   role: UserRole;
+  sessionVersion: number;
 };
 
 type UserLookup =
@@ -78,5 +79,6 @@ verifyCredentials(
     id: user.id,
     email: user.email,
     role: user.role,
+    sessionVersion: user.sessionVersion,
   };
 }

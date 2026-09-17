@@ -26,6 +26,7 @@ export type SessionPayload = {
   userId: string;
   email: string;
   role: UserRole;
+  sessionVersion: number;
 };
 
 export async function encrypt(payload: SessionPayload) {
@@ -71,7 +72,16 @@ export async function decrypt(
 
       !isUserRole(
         payload.role
-      )
+      ) ||
+
+      typeof payload.sessionVersion
+        !== "number" ||
+
+      !Number.isInteger(
+        payload.sessionVersion
+      ) ||
+
+      payload.sessionVersion < 1
     ) {
       return null;
     }
@@ -85,6 +95,9 @@ export async function decrypt(
 
       role:
         payload.role,
+
+      sessionVersion:
+        payload.sessionVersion,
     };
   } catch {
     return null;

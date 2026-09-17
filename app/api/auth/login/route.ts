@@ -126,7 +126,10 @@ export async function POST(request: Request) {
     const session =
       await encrypt({
         userId:user.id,
-        email:user.email,role:user.role,
+        email:user.email,
+        role:user.role,
+        sessionVersion:
+          user.sessionVersion,
       });
 
     const response = NextResponse.json(

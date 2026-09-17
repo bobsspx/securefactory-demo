@@ -6,7 +6,8 @@ export type SecurityEvent =
   | "LOGIN_RATE_LIMITED"
   | "LOGOUT"
   | "INVALID_SESSION"
-  | "AUTHORIZATION_DENIED";
+  | "AUTHORIZATION_DENIED"
+  | "SESSION_REVOKED";
 
 type SecurityLogData = {
   event: SecurityEvent;
@@ -65,6 +66,7 @@ function getSeverity(event: SecurityEvent): Severity {
     case "LOGIN_FAILURE":
     case "AUTHORIZATION_DENIED":
     case "INVALID_SESSION":
+    case "SESSION_REVOKED":
       return "medium";
 
     case "LOGIN_RATE_LIMITED":

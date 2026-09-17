@@ -86,6 +86,9 @@ for (const user of users) {
 
       is_active =
         TRUE,
+      
+      session_version =
+      users.session_version + 1,
 
       updated_at =
         NOW();

@@ -4,9 +4,7 @@ import {
 } from "next/server";
 
 import {
-  decrypt,
   SESSION_COOKIE_NAME,
-  type SessionPayload,
 } from "./session";
 
 import {
@@ -21,9 +19,14 @@ import {
   securityLog,
 } from "./security-log";
 
+import {
+  resolveSessionUser,
+  type CurrentSessionUser,
+} from "./session-user";
+
 type ApiAuthorizationSuccess = {
   ok: true;
-  session: SessionPayload;
+  session: CurrentSessionUser;
 };
 
 type ApiAuthorizationFailure = {
@@ -89,43 +92,135 @@ requireApiPermission(
     };
   }
 
-  const session =
-    await decrypt(
-      cookie.value
+  const resolution =
+  await resolveSessionUser(
+    cookie.value
+  );
+
+if (
+  resolution.status
+    === "invalid"
+) {
+  await securityLog({
+    event:
+      "INVALID_SESSION",
+
+    ip:
+      getClientIp(request),
+
+    details:
+      `path=${request.nextUrl.pathname}`,
+  });
+
+  const response =
+    NextResponse.json(
+      {
+        error:
+          "Invalid session.",
+      },
+      {
+        status: 401,
+
+        headers: {
+          "Cache-Control":
+            "no-store",
+        },
+      }
     );
 
-  if (!session) {
-    await securityLog({
-      event:
-        "INVALID_SESSION",
+  response.cookies.set({
+    name:
+      SESSION_COOKIE_NAME,
 
-      ip:
-        getClientIp(request),
+    value: "",
 
-      details:
+    httpOnly: true,
+
+    secure:
+      process.env.NODE_ENV
+        === "production",
+
+    sameSite: "lax",
+
+    path: "/",
+
+    expires:
+      new Date(0),
+  });
+
+  return {
+    ok: false,
+    response,
+  };
+}
+
+if (
+  resolution.status
+    === "revoked"
+) {
+  await securityLog({
+    event:
+      "SESSION_REVOKED",
+
+    ip:
+      getClientIp(request),
+
+    email:
+      resolution
+        .session
+        .email,
+
+    details:
+      [
+        `reason=${resolution.reason}`,
         `path=${request.nextUrl.pathname}`,
-    });
+      ].join(" "),
+  });
 
-    return {
-      ok: false,
+  const response =
+    NextResponse.json(
+      {
+        error:
+          "Session revoked.",
+      },
+      {
+        status: 401,
 
-      response:
-        NextResponse.json(
-          {
-            error:
-              "Invalid session.",
-          },
-          {
-            status: 401,
+        headers: {
+          "Cache-Control":
+            "no-store",
+        },
+      }
+    );
 
-            headers: {
-              "Cache-Control":
-                "no-store",
-            },
-          }
-        ),
-    };
-  }
+  response.cookies.set({
+    name:
+      SESSION_COOKIE_NAME,
+
+    value: "",
+
+    httpOnly: true,
+
+    secure:
+      process.env.NODE_ENV
+        === "production",
+
+    sameSite: "lax",
+
+    path: "/",
+
+    expires:
+      new Date(0),
+  });
+
+  return {
+    ok: false,
+    response,
+  };
+}
+
+const session =
+  resolution.user;
 
   const authorization =
     authorizePermission(

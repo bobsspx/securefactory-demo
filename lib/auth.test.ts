@@ -44,6 +44,8 @@ describe(
 
         role:
           "operator",
+
+        sessionVersion: 1,
       };
 
       const result =
@@ -57,6 +59,7 @@ describe(
         id: user.id,
         email: user.email,
         role: "operator",
+        sessionVersion: 1,
       });
     }
   );
@@ -84,6 +87,8 @@ describe(
 
         role:
           "viewer",
+
+        sessionVersion: 1,
       };
 
       const result =
