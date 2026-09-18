@@ -11,7 +11,9 @@ export type Permission =
   | "dashboard.read"
   | "production.read"
   | "security.read"
-  | "audit.read";
+  | "audit.read"
+  | "users.read"
+  | "users.manage";
 
 const permissions:
   Record<
@@ -24,6 +26,8 @@ const permissions:
     "production.read",
     "security.read",
     "audit.read",
+    "users.read",
+    "users.manage",
   ],
 
   operator: [

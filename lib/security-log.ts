@@ -7,7 +7,10 @@ export type SecurityEvent =
   | "LOGOUT"
   | "INVALID_SESSION"
   | "AUTHORIZATION_DENIED"
-  | "SESSION_REVOKED";
+  | "SESSION_REVOKED"
+  | "USER_ROLE_CHANGED"
+  | "USER_DISABLED"
+  | "USER_ENABLED";
 
 type SecurityLogData = {
   event: SecurityEvent;

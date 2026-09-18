@@ -68,4 +68,42 @@ describe("RBAC", () => {
       isUserRole("superadmin")
     ).toBe(false);
   });
+
+  it(
+  "allows admin to read and manage users",
+  () => {
+    expect(
+      hasPermission(
+        "admin",
+        "users.read"
+      )
+    ).toBe(true);
+
+    expect(
+      hasPermission(
+        "admin",
+        "users.manage"
+      )
+    ).toBe(true);
+  }
+);
+
+it(
+  "prevents operator and viewer from managing users",
+  () => {
+    expect(
+      hasPermission(
+        "operator",
+        "users.manage"
+      )
+    ).toBe(false);
+
+    expect(
+      hasPermission(
+        "viewer",
+        "users.manage"
+      )
+    ).toBe(false);
+  }
+);
 });
