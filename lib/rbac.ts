@@ -10,6 +10,7 @@ export type UserRole =
 export type Permission =
   | "dashboard.read"
   | "production.read"
+  | "production.write"
   | "security.read"
   | "audit.read"
   | "users.read"
@@ -24,6 +25,7 @@ const permissions:
   admin: [
     "dashboard.read",
     "production.read",
+    "production.write",
     "security.read",
     "audit.read",
     "users.read",
@@ -33,6 +35,7 @@ const permissions:
   operator: [
     "dashboard.read",
     "production.read",
+    "production.write",
     "security.read",
   ],
 

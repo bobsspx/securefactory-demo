@@ -106,4 +106,36 @@ it(
     ).toBe(false);
   }
 );
+
+it(
+  "allows admin and operator to write production data",
+  () => {
+    expect(
+      hasPermission(
+        "admin",
+        "production.write"
+      )
+    ).toBe(true);
+
+    expect(
+      hasPermission(
+        "operator",
+        "production.write"
+      )
+    ).toBe(true);
+  }
+);
+
+it(
+  "prevents viewer from writing production data",
+  () => {
+    expect(
+      hasPermission(
+        "viewer",
+        "production.write"
+      )
+    ).toBe(false);
+  }
+);
+
 });
