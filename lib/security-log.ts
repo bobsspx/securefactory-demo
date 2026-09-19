@@ -10,7 +10,9 @@ export type SecurityEvent =
   | "SESSION_REVOKED"
   | "USER_ROLE_CHANGED"
   | "USER_DISABLED"
-  | "USER_ENABLED";
+  | "USER_ENABLED"
+  | "PRODUCTION_RECORD_CREATED"
+  | "PRODUCTION_RECORD_UPDATED";
 
 type SecurityLogData = {
   event: SecurityEvent;
@@ -82,6 +84,8 @@ function getSeverity(
 
     case "LOGIN_SUCCESS":
     case "LOGOUT":
+    case "PRODUCTION_RECORD_CREATED":
+    case "PRODUCTION_RECORD_UPDATED":
     default:
       return "low";
   }

@@ -165,4 +165,55 @@ it(
   }
 );
 
+it(
+  "uses low severity for production record changes",
+  async () => {
+    const logSpy = vi
+      .spyOn(
+        console,
+        "log"
+      )
+      .mockImplementation(
+        () => {}
+      );
+
+    await securityLog({
+      event:
+        "PRODUCTION_RECORD_CREATED",
+
+      email:
+        "operator@securefactory.demo",
+
+      ip:
+        "139.162.113.45",
+
+      details:
+        "record=test-record",
+    });
+
+    const output =
+      logSpy.mock
+        .calls[0][0] as string;
+
+    const entry =
+      JSON.parse(output);
+
+    expect(
+      entry
+    ).toMatchObject({
+      event:
+        "PRODUCTION_RECORD_CREATED",
+
+      email:
+        "op***@securefactory.demo",
+
+      ip:
+        "139.162.113.xxx",
+
+      severity:
+        "low",
+    });
+  }
+);
+
 });
