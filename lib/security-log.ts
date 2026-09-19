@@ -64,12 +64,17 @@ function maskIp(ip?: string) {
   return "unknown";
 }
 
-function getSeverity(event: SecurityEvent): Severity {
+function getSeverity(
+  event: SecurityEvent
+): Severity {
   switch (event) {
     case "LOGIN_FAILURE":
     case "AUTHORIZATION_DENIED":
     case "INVALID_SESSION":
     case "SESSION_REVOKED":
+    case "USER_ROLE_CHANGED":
+    case "USER_DISABLED":
+    case "USER_ENABLED":
       return "medium";
 
     case "LOGIN_RATE_LIMITED":

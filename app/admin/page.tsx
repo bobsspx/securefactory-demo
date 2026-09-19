@@ -57,6 +57,12 @@ const session =
       "audit.read"
     );
 
+  const canManageUsers =
+  hasPermission(
+    session.role,
+    "users.read"
+  );
+
   const activity =
     canViewAudit
       ? await getRecentSecurityEvents(20)
@@ -99,8 +105,14 @@ const session =
               Activity Logs
             </a>
           )}
+          
+          {canManageUsers && (
+            <Link href="/admin/users">
+              Users
+            </Link>
+          )}
         </nav>
-
+      
         <LogoutButton />
       </aside>
 

@@ -1102,3 +1102,218 @@ footer p {
   color: #667075;
   font-size: 13px;
 }
+
+.usersSection {
+  margin-top: 50px;
+}
+
+.usersIntro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.usersIntro p {
+  color: #667075;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.usersIntro h2 {
+  margin-top: 8px;
+  font-size: 30px;
+}
+
+.usersIntro > span {
+  color: #778186;
+  font-size: 12px;
+}
+
+.usersMessage {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+
+  border:
+    1px solid #30373a;
+
+  border-radius: 7px;
+
+  background: #101416;
+
+  color: #aab2b5;
+
+  font-size: 13px;
+}
+
+.usersTable {
+  border:
+    1px solid #252b2e;
+
+  border-radius: 8px;
+
+  overflow: hidden;
+}
+
+.usersRow {
+  min-height: 75px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(240px, 2fr)
+    minmax(130px, 1fr)
+    minmax(130px, 1fr)
+    100px
+    110px;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 15px 20px;
+
+  border-bottom:
+    1px solid #252b2e;
+}
+
+.usersRow:last-child {
+  border-bottom: 0;
+}
+
+.usersHead {
+  min-height: 50px;
+
+  background: #101416;
+
+  color: #6f797d;
+
+  font-size: 9px;
+
+  letter-spacing: 1px;
+}
+
+.userIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.userIdentity strong {
+  font-size: 13px;
+}
+
+.userIdentity small {
+  width: fit-content;
+
+  padding: 3px 6px;
+
+  border:
+    1px solid #354045;
+
+  border-radius: 4px;
+
+  color: #758086;
+
+  font-size: 8px;
+
+  letter-spacing: 1px;
+}
+
+.usersRow select {
+  height: 40px;
+
+  padding: 0 10px;
+
+  background: #101416;
+
+  color: #d9dddd;
+
+  border:
+    1px solid #30373a;
+
+  border-radius: 6px;
+}
+
+.userStatusControl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+}
+
+.statusActive {
+  color: #6fc38a;
+  font-size: 10px;
+}
+
+.statusDisabled {
+  color: #cf7b7b;
+  font-size: 10px;
+}
+
+.sessionVersion {
+  color: #778186;
+  font-size: 12px;
+}
+
+.usersRow button {
+  height: 39px;
+
+  background: transparent;
+
+  color: #d8dddd;
+
+  border:
+    1px solid #384044;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+.usersRow button:hover:not(:disabled) {
+  background: #171b1d;
+}
+
+.usersRow button:disabled,
+.usersRow select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.usersNote {
+  margin-top: 18px;
+
+  color: #616b6f;
+
+  font-size: 11px;
+}
+
+@media (
+  max-width: 900px
+) {
+  .usersTable {
+    border: 0;
+    overflow: visible;
+  }
+
+  .usersHead {
+    display: none;
+  }
+
+  .usersRow {
+    margin-bottom: 15px;
+
+    grid-template-columns:
+      1fr;
+
+    border:
+      1px solid #252b2e;
+
+    border-radius: 8px;
+
+    padding: 20px;
+  }
+}
