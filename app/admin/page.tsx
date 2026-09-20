@@ -90,9 +90,9 @@ const session =
             Overview
           </a>
 
-          <a href="#production">
+          <Link href="/admin/production">
             Production
-          </a>
+          </Link>
 
           {canViewSecurity && (
             <a href="#security">

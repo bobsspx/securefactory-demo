@@ -21,14 +21,15 @@ import {
 } from "@/lib/rbac";
 
 import {
-  listManagedUsers,
-} from "@/lib/users";
+  listProductionRecords,
+} from "@/lib/production";
 
 import LogoutButton from "../logout-button";
-import UsersClient from "./users-client";
+
+import ProductionClient from "./production-client";
 
 export default async function
-UsersPage() {
+ProductionPage() {
   const cookieStore =
     await cookies();
 
@@ -58,14 +59,28 @@ UsersPage() {
   if (
     !hasPermission(
       session.role,
-      "users.read"
+      "production.read"
     )
   ) {
     redirect("/admin");
   }
 
-  const users =
-    await listManagedUsers();
+  const canWrite =
+    hasPermission(
+      session.role,
+      "production.write"
+    );
+
+  const canManageUsers =
+    hasPermission(
+      session.role,
+      "users.read"
+    );
+
+  const records =
+    await listProductionRecords(
+      100
+    );
 
   return (
     <main className="adminLayout">
@@ -89,16 +104,18 @@ UsersPage() {
             Overview
           </Link>
 
-          <Link href="/admin/production">
+          <Link
+            className="active"
+            href="/admin/production"
+          >
             Production
           </Link>
 
-          <Link
-            className="active"
-            href="/admin/users"
-          >
-            Users
-          </Link>
+          {canManageUsers && (
+            <Link href="/admin/users">
+              Users
+            </Link>
+          )}
         </nav>
 
         <LogoutButton />
@@ -108,11 +125,11 @@ UsersPage() {
         <header className="adminHeader">
           <div>
             <p>
-              ACCESS MANAGEMENT
+              FACTORY OPERATIONS
             </p>
 
             <h1>
-              Users
+              Production
             </h1>
           </div>
 
@@ -128,28 +145,36 @@ UsersPage() {
           </div>
         </header>
 
-        <UsersClient
-          initialUsers={users.map(
-            (user) => ({
-              id:
-                user.id,
+        <ProductionClient
+          canWrite={canWrite}
+          initialRecords={
+            records.map(
+              (record) => ({
+                id:
+                  record.id,
 
-              email:
-                user.email,
+                productionDate:
+                  record.productionDate,
 
-              role:
-                user.role,
+                lineCode:
+                  record.lineCode,
 
-              isActive:
-                user.isActive,
+                productName:
+                  record.productName,
 
-              sessionVersion:
-                user.sessionVersion,
-            })
-          )}
+                plannedUnits:
+                  record.plannedUnits,
 
-          currentUserId={
-            session.userId
+                producedUnits:
+                  record.producedUnits,
+
+                rejectedUnits:
+                  record.rejectedUnits,
+
+                status:
+                  record.status,
+              })
+            )
           }
         />
       </section>
