@@ -14,6 +14,11 @@ import type {
   ValidatedProductionInput,
 } from "./production-validation";
 
+import {
+  calculateProductionMetrics,
+  type ProductionDashboardMetrics,
+} from "./production-metrics";
+
 export async function
 listProductionRecords(
   limit = 50
@@ -285,4 +290,88 @@ Promise<
     createdAt:row.created_at as string | Date,
     updatedAt:row.updated_at as string | Date,
   };
+}
+
+export async function
+getLatestProductionDashboardMetrics():
+Promise<
+  ProductionDashboardMetrics
+> {
+
+  const dateRows =
+    await sql`
+      SELECT
+        MAX(
+          production_date
+        )::text
+          AS production_date
+      FROM
+        production_records;
+    `;
+
+  const latestDate =
+    dateRows[0]
+      ?.production_date
+      ? String(
+          dateRows[0]
+            .production_date
+        )
+      : null;
+
+  if (!latestDate) {
+    return (
+      calculateProductionMetrics(
+        null,
+        []
+      )
+    );
+  }
+
+  const rows =
+    await sql`
+      SELECT
+        line_code,
+        planned_units,
+        produced_units,
+        rejected_units,
+        status
+      FROM
+        production_records
+      WHERE
+        production_date =
+          ${latestDate}::date;
+    `;
+
+  return (
+    calculateProductionMetrics(
+      latestDate,
+
+      rows.map(
+        (row) => ({
+          lineCode:
+            String(
+              row.line_code
+            ),
+
+          plannedUnits:
+            Number(
+              row.planned_units
+            ),
+
+          producedUnits:
+            Number(
+              row.produced_units
+            ),
+
+          rejectedUnits:
+            Number(
+              row.rejected_units
+            ),
+
+          status:
+            row.status as ProductionStatus,
+        })
+      )
+    )
+  );
 }

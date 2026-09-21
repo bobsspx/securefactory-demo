@@ -7,8 +7,13 @@ import {
   requireApiPermission,
 } from "@/lib/api-authorization";
 
+import {
+  getLatestProductionDashboardMetrics,
+} from "@/lib/production";
+
 export async function GET(
-  request: NextRequest
+  request:
+    NextRequest
 ) {
   const auth =
     await requireApiPermission(
@@ -20,18 +25,36 @@ export async function GET(
     return auth.response;
   }
 
+  const metrics =
+    await getLatestProductionDashboardMetrics();
+
   return NextResponse.json(
     {
-      productionToday:
-        12480,
+      productionDate:
+        metrics.productionDate,
+
+      producedUnits:
+        metrics.producedUnits,
+
+      plannedUnits:
+        metrics.plannedUnits,
 
       efficiency:
-        94.8,
+        metrics.efficiency,
 
       activeLines: {
-        active: 8,
-        total: 8,
+        active:
+          metrics.activeLines,
+
+        total:
+          metrics.totalLines,
       },
+
+      rejectedUnits:
+        metrics.rejectedUnits,
+
+      rejectRate:
+        metrics.rejectRate,
     },
     {
       headers: {

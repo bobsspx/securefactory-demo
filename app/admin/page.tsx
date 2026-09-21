@@ -20,6 +20,10 @@ import {
 
 import LogoutButton from "./logout-button";
 
+import {
+  getLatestProductionDashboardMetrics,
+} from "@/lib/production";
+
 export default async function AdminPage() {
   const cookieStore = await cookies();
 
@@ -67,6 +71,9 @@ const session =
     canViewAudit
       ? await getRecentSecurityEvents(20)
       : [];
+  
+  const productionMetrics =
+    await getLatestProductionDashboardMetrics();
 
   return (
     <main className="adminLayout">
@@ -140,15 +147,18 @@ const session =
         >
           <article>
             <span>
-              Production Today
+              Latest Production
             </span>
-
-            <strong>
-              12,480
-            </strong>
-
+              <strong>
+                {productionMetrics
+                .producedUnits
+                .toLocaleString()}
+              </strong>
             <small>
-              Units produced
+              {productionMetrics
+              .productionDate
+              ? `Production date ${productionMetrics.productionDate}`
+              : "No production data"}
             </small>
           </article>
 
@@ -158,11 +168,21 @@ const session =
             </span>
 
             <strong>
-              94.8%
+              {productionMetrics
+                .efficiency
+                .toFixed(1)}
+              %
             </strong>
 
             <small>
-              +2.4% this week
+              {productionMetrics
+                .producedUnits
+                .toLocaleString()}
+              {" / "}
+              {productionMetrics
+                .plannedUnits
+                .toLocaleString()}
+              {" units"}
             </small>
           </article>
 
@@ -172,25 +192,41 @@ const session =
             </span>
 
             <strong>
-              08 / 08
+              {String(
+                productionMetrics
+                  .activeLines
+              ).padStart(2, "0")}
+
+              {" / "}
+
+              {String(
+                productionMetrics
+                  .totalLines
+              ).padStart(2, "0")}
             </strong>
 
             <small>
-              All systems operational
+              Running / scheduled lines
             </small>
           </article>
 
           <article>
             <span>
-              Security Status
+              Reject Rate
             </span>
 
             <strong>
-              Normal
+              {productionMetrics
+                .rejectRate
+                .toFixed(2)}
+              %
             </strong>
 
             <small>
-              No active incidents
+              {productionMetrics
+                .rejectedUnits
+                .toLocaleString()}
+              {" rejected units"}
             </small>
           </article>
         </section>
