@@ -147,7 +147,7 @@ Promise<ProductionRecord> {
     await sql`
       INSERT INTO
         production_records (
-          production_date::text AS production_date,
+          production_date,
           line_code,
           product_name,
           planned_units,

@@ -160,6 +160,10 @@ const nextConfig:
           source: "/admin/:path*",
           headers: adminRobotsHeaders,
         },
+        {
+          source: "/api/:path*",
+          headers: adminRobotsHeaders,
+        },
       ];
   },
 };
