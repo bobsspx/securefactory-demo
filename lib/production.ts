@@ -39,7 +39,7 @@ Promise<
     await sql`
       SELECT
         id::text AS id,
-        production_date,
+        production_date::text AS production_date,
         line_code,
         product_name,
         planned_units,
@@ -95,7 +95,7 @@ Promise<
     await sql`
       SELECT
         id::text AS id,
-        production_date,
+        production_date::text AS production_date,
         line_code,
         product_name,
         planned_units,
@@ -147,7 +147,7 @@ Promise<ProductionRecord> {
     await sql`
       INSERT INTO
         production_records (
-          production_date,
+          production_date::text AS production_date,
           line_code,
           product_name,
           planned_units,
@@ -170,7 +170,7 @@ Promise<ProductionRecord> {
       )
       RETURNING
         id::text AS id,
-        production_date,
+        production_date::text AS production_date,
         line_code,
         product_name,
         planned_units,
@@ -260,7 +260,7 @@ Promise<
 
       RETURNING
         id::text AS id,
-        production_date,
+        production_date::text AS production_date,
         line_code,
         product_name,
         planned_units,

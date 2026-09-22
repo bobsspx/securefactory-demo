@@ -4,12 +4,12 @@ import {
   isUserRole,
   type UserRole,
 } from "./rbac";
+import {
+  env,
+} from "./env";
 
-const secretKey = process.env.SESSION_SECRET;
-
-if (!secretKey) {
-  throw new Error("SESSION_SECRET is not configured");
-}
+const secretKey =
+  env.SESSION_SECRET;
 
 const encodedKey = new TextEncoder().encode(secretKey);
 

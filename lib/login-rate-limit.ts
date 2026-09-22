@@ -2,6 +2,10 @@ import { createHmac } from "crypto";
 
 import { sql } from "./db";
 
+import {
+  env,
+} from "./env";
+
 const WINDOW_MS =
   10 * 60 * 1000;
 
@@ -28,13 +32,8 @@ export function createRateLimitKey(
   ip: string,
   email: string,
   secret =
-    process.env.RATE_LIMIT_SECRET
+    env.RATE_LIMIT_SECRET
 ) {
-  if (!secret) {
-    throw new Error(
-      "RATE_LIMIT_SECRET is not configured"
-    );
-  }
 
   const normalizedIp =
     ip.trim();
