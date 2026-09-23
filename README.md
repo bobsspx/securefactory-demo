@@ -394,4 +394,8 @@ No offensive testing was performed against third-party systems.
 
 ## Project Status
 
-SecureFactory is in the final Version 1.0 portfolio hardening and documentation stage.
+**SecureFactory v1.0.0 — Portfolio Release**
+
+The Version 1.0 release includes secure authentication, RBAC, session revocation, persistent rate limiting, audit logging, user management, production management, database-backed metrics, application validation, defensive browser security controls, automated testing, and production deployment.
+
+Future development may explore MFA, CI security scanning, SIEM integration, end-to-end testing, and multi-tenant authorization.
